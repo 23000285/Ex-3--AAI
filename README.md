@@ -1,6 +1,6 @@
 <H4>NAME: VENKATANATHAN P R </H4>
 <H4>REGISTER NO: 212223240173 </H4>
-<H4>DATE:
+<H4>DATE: 24-09-2025
 
 ## Aim: 
    To construct a python program to implement approximate inference using Gibbs Sampling.</br>
@@ -32,98 +32,108 @@
 
 
 ## Program:
-```
+```python
+# !pip install pgmpy networkx matplotlib
+
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.sampling import GibbsSampling
 import networkx as nx
 import matplotlib.pyplot as plt
 
-alarm_model = DiscreteBayesianNetwork(
-    [
-        ("Burglary", "Alarm"),
-        ("Earthquake", "Alarm"),
-        ("Alarm", "JohnCalls"),
-        ("Alarm", "MaryCalls"),
-    ]
-)
+# Define the Bayesian Network structure
+alarm_model = DiscreteBayesianNetwork([
+    ("Burglary", "Alarm"),
+    ("Earthquake", "Alarm"),
+    ("Alarm", "JohnCalls"),
+    ("Alarm", "MaryCalls"),
+])
 
-# Defining the parameters using CPT
-from pgmpy.factors.discrete import TabularCPD
-
-cpd_burglary = TabularCPD(
-    variable="Burglary", variable_card=2, values=[[0.999], [0.001]]
-)
-cpd_earthquake = TabularCPD(
-    variable="Earthquake", variable_card=2, values=[[0.998], [0.002]]
-)
+# Define CPDs
+cpd_burglary = TabularCPD("Burglary", 2, [[0.999], [0.001]])
+cpd_earthquake = TabularCPD("Earthquake", 2, [[0.998], [0.002]])
 cpd_alarm = TabularCPD(
-    variable="Alarm",
-    variable_card=2,
-    values=[[0.999, 0.71, 0.06, 0.05], [0.001, 0.29, 0.94, 0.95]],
+    "Alarm", 2,
+    [[0.999, 0.71, 0.06, 0.05],
+     [0.001, 0.29, 0.94, 0.95]],
     evidence=["Burglary", "Earthquake"],
-    evidence_card=[2, 2],
+    evidence_card=[2, 2]
 )
 cpd_johncalls = TabularCPD(
-    variable="JohnCalls",
-    variable_card=2,
-    values=[[0.95, 0.1], [0.05, 0.9]],
+    "JohnCalls", 2,
+    [[0.95, 0.1],
+     [0.05, 0.9]],
     evidence=["Alarm"],
-    evidence_card=[2],
+    evidence_card=[2]
 )
 cpd_marycalls = TabularCPD(
-    variable="MaryCalls",
-    variable_card=2,
-    values=[[0.1, 0.7], [0.9, 0.3]],
+    "MaryCalls", 2,
+    [[0.1, 0.7],
+     [0.9, 0.3]],
     evidence=["Alarm"],
-    evidence_card=[2],
+    evidence_card=[2]
 )
 
-# Associating the parameters with the model structure
-alarm_model.add_cpds(
-    cpd_burglary, cpd_earthquake, cpd_alarm, cpd_johncalls, cpd_marycalls
-)
+# Add CPDs to the model
+alarm_model.add_cpds(cpd_burglary, cpd_earthquake, cpd_alarm, cpd_johncalls, cpd_marycalls)
 
-print("Bayesian Network Structure")
-print(alarm_model)
+# Verify the model
+print("Bayesian Network Structure:")
+print(alarm_model.check_model())
 
-G=nx.DiGraph()
-
-nodes=['Burglary','Earthquake','JohnCalls','MaryCalls']
-edges=[('Burglary','Alarm'),('Earthquake','Alarm'),('Alarm','JohnCalls'),('Alarm','MaryCalls')]
-
+# Draw the graph (fixed for new matplotlib)
+G = nx.DiGraph()
+nodes = ["Burglary", "Earthquake", "Alarm", "JohnCalls", "MaryCalls"]
+edges = [
+    ("Burglary", "Alarm"),
+    ("Earthquake", "Alarm"),
+    ("Alarm", "JohnCalls"),
+    ("Alarm", "MaryCalls"),
+]
 G.add_nodes_from(nodes)
 G.add_edges_from(edges)
 
-pos={
-    'Burglary':(0,0),
-    'Earthquake':(2,0),
-    'Alarm':(1,-2),
-    'JohnCalls':(0,-4),
-    'MaryCalls':(2,-4)
-    }
+pos = {
+    "Burglary": (0, 0),
+    "Earthquake": (2, 0),
+    "Alarm": (1, -2),
+    "JohnCalls": (0, -4),
+    "MaryCalls": (2, -4),
+}
 
-nx.draw(G,pos,with_labels=True,node_size=1500,node_color="skyblue",font_size=10,font_weight="bold",arrowsize=20)
+fig, ax = plt.subplots()
+nx.draw_networkx(
+    G,
+    pos=pos,
+    ax=ax,
+    with_labels=True,
+    node_size=1500,
+    node_color="skyblue",
+    font_size=10,
+    font_weight="bold",
+    arrowsize=20
+)
 plt.title("Bayesian Network: Burglar Alarm Problem")
+plt.axis("off")
 plt.show()
 
-gibbssampler=GibbsSampling(alarm_model)
+# Gibbs Sampling
+gibbssampler = GibbsSampling(alarm_model)
+num_samples = 10000
+samples = gibbssampler.sample(size=num_samples)
 
-num_samples=10000
-
-samples=gibbssampler.sample(size=num_samples)
-
-query_variable="Burglary"
-query_result=samples[query_variable].value_counts(normalize=True)
-
-print("\n Approximate probabilities of {}:".format(query_variable))
+query_variable = "Burglary"
+query_result = samples[query_variable].value_counts(normalize=True)
+print(f"\nApproximate probabilities of {query_variable}:")
 print(query_result)
+
 ```
 
 ## Output:
-<img width=35% src="https://github.com/user-attachments/assets/5e971221-b66b-4541-a8ae-5ffdfed68905" >
 
-<img width=35% src="https://github.com/user-attachments/assets/669122ec-b924-4091-9eff-f1494fa89f7a" >
+![alt text](image.png)
+
+![alt text](image-1.png)
 
 
 ## Result:
